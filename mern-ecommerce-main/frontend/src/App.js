@@ -1,4 +1,5 @@
 import { useSelector } from 'react-redux';
+import { useMemo } from 'react';
 import {
   Navigate,
   Route, RouterProvider, createBrowserRouter, createRoutesFromElements
@@ -23,7 +24,7 @@ function App() {
   useFetchLoggedInUserDetails(loggedInUser);
 
 
-  const routes = createBrowserRouter(
+  const routes = useMemo(() => createBrowserRouter(
     createRoutesFromElements(
       <>
         <Route path='/signup' element={<SignupPage/>}/>
@@ -42,6 +43,7 @@ function App() {
             <Route path='/admin/product-update/:id' element={<Protected><ProductUpdatePage/></Protected>}/>
             <Route path='/admin/add-product' element={<Protected><AddProductPage/></Protected>}/>
             <Route path='/admin/orders'  element={<Protected><AdminOrdersPage/></Protected>}/>
+            <Route path='/admin/profile' element={<Protected><UserProfilePage/></Protected>}/>
             <Route path='*' element={<Navigate to={'/admin/dashboard'}/>}/>
             </>
           ):(
@@ -62,7 +64,7 @@ function App() {
 
       </>
     )
-  )
+  ), [loggedInUser?.isAdmin])
 
   
   return isAuthChecked ? <RouterProvider router={routes}/> : "";
