@@ -61,12 +61,14 @@ exports.login=async(req,res)=>{
             const token=generateToken(secureInfo)
 
             // sending jwt token in the response cookies
-            res.cookie('token',token,{
+            const cookieOptions = {
                 sameSite:process.env.PRODUCTION?.toLowerCase()==='true'?"None":'Lax',
                 maxAge:parseInt(process.env.COOKIE_EXPIRATION_DAYS) * 24 * 60 * 60 * 1000,
                 httpOnly:true,
                 secure:process.env.PRODUCTION?.toLowerCase()==='true'?true:false
-            })
+            }
+            console.log('Cookie options:', cookieOptions, 'PRODUCTION:', process.env.PRODUCTION)
+            res.cookie('token',token,cookieOptions)
             return res.status(200).json(sanitizeUser(existingUser))
         }
 
