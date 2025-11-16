@@ -47,6 +47,12 @@ server.get("/",(req,res)=>{
     res.status(200).json({message:'running'})
 })
 
-server.listen(8000,()=>{
-    console.log('server [STARTED] ~ http://localhost:8000');
-})
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+    server.listen(8000, () => {
+        console.log('server [STARTED] ~ http://localhost:8000');
+    })
+}
+
+// Export for Vercel serverless
+module.exports = server;
