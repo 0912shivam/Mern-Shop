@@ -7,6 +7,19 @@ const { sanitizeUser } = require("../utils/SanitizeUser");
 const { generateToken } = require("../utils/GenerateToken");
 const PasswordResetToken = require("../models/PasswordResetToken");
 
+// Cookie configuration helper for production deployment
+const getCookieOptions = () => {
+    const isProduction = process.env.PRODUCTION?.toLowerCase() === 'true' || 
+                        process.env.NODE_ENV === 'production';
+    
+    return {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'None' : 'Lax',
+        maxAge: parseInt(process.env.COOKIE_EXPIRATION_DAYS || '30') * 24 * 60 * 60 * 1000
+    };
+};
+
 exports.signup=async(req,res)=>{
     try {
         const existingUser=await User.findOne({email:req.body.email})
@@ -31,12 +44,7 @@ exports.signup=async(req,res)=>{
         const token=generateToken(secureInfo)
 
         // sending jwt token in the response cookies
-        res.cookie('token',token,{
-            sameSite:process.env.PRODUCTION?.toLowerCase()==='true'?"None":'Lax',
-            maxAge:parseInt(process.env.COOKIE_EXPIRATION_DAYS) * 24 * 60 * 60 * 1000,
-            httpOnly:true,
-            secure:process.env.PRODUCTION?.toLowerCase()==='true'?true:false
-        })
+        res.cookie('token', token, getCookieOptions());
 
         res.status(201).json(sanitizeUser(createdUser))
 
@@ -61,14 +69,7 @@ exports.login=async(req,res)=>{
             const token=generateToken(secureInfo)
 
             // sending jwt token in the response cookies
-            const cookieOptions = {
-                sameSite:process.env.PRODUCTION?.toLowerCase()==='true'?"None":'Lax',
-                maxAge:parseInt(process.env.COOKIE_EXPIRATION_DAYS) * 24 * 60 * 60 * 1000,
-                httpOnly:true,
-                secure:process.env.PRODUCTION?.toLowerCase()==='true'?true:false
-            }
-            console.log('Cookie options:', cookieOptions, 'PRODUCTION:', process.env.PRODUCTION)
-            res.cookie('token',token,cookieOptions)
+            res.cookie('token', token, getCookieOptions());
             return res.status(200).json(sanitizeUser(existingUser))
         }
 
@@ -236,11 +237,7 @@ exports.resetPassword=async(req,res)=>{
 
 exports.logout=async(req,res)=>{
     try {
-        res.clearCookie('token', {
-            sameSite:process.env.PRODUCTION?.toLowerCase()==='true'?"None":'Lax',
-            httpOnly:true,
-            secure:process.env.PRODUCTION?.toLowerCase()==='true'?true:false
-        })
+        res.clearCookie('token', getCookieOptions());
         res.status(200).json({message:'Logout successful'})
     } catch (error) {
         console.log(error);
