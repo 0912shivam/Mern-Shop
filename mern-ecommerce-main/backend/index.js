@@ -47,6 +47,19 @@ server.get("/",(req,res)=>{
     res.status(200).json({message:'running'})
 })
 
+server.get("/health",(req,res)=>{
+    res.status(200).json({
+        message:'Server is running',
+        env: {
+            hasMongoUri: !!process.env.MONGO_URI,
+            hasSecretKey: !!process.env.SECRET_KEY,
+            hasOrigin: !!process.env.ORIGIN,
+            production: process.env.PRODUCTION,
+            mongoUriLength: process.env.MONGO_URI?.length
+        }
+    })
+})
+
 // For local development
 if (process.env.NODE_ENV !== 'production') {
     server.listen(8000, () => {
